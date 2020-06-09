@@ -34,3 +34,5 @@ features = ["attributes"]
 [features]
 default = []
 is_sync = []
+no_send = []
+
