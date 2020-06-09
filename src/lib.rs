@@ -282,12 +282,21 @@ mod parse;
 mod visit;
 
 fn convert_async(input: &mut Item) -> TokenStream2 {
-    match input {
-        Item::Impl(item) => quote!(#[async_trait::async_trait]#item),
-        Item::Trait(item) => quote!(#[async_trait::async_trait]#item),
-        Item::Fn(item) => quote!(#item),
+    if cfg!(feature = "no_send") {
+        match input {
+            Item::Impl(item) => quote!(#[async_trait::async_trait(?Send)]#item),
+            Item::Trait(item) => quote!(#[async_trait::async_trait(?Send)]#item),
+            Item::Fn(item) => quote!(#item),
+        }
+        .into()
+    } else {
+        match input {
+            Item::Impl(item) => quote!(#[async_trait::async_trait]#item),
+            Item::Trait(item) => quote!(#[async_trait::async_trait]#item),
+            Item::Fn(item) => quote!(#item),
+        }
+        .into()
     }
-    .into()
 }
 
 fn convert_sync(input: &mut Item) -> TokenStream2 {
